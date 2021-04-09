@@ -1,0 +1,23 @@
+{
+  "common": {
+   
+  },
+  "CheckIn": {
+      "registration": "Registration",
+      "passport": "Passport photo",
+      "signature": "Signature",
+      "welcomeText": "Making check-in digital, please fill out the following information",
+      "firstName":"First name",
+      "lastName":"Last name",
+      "phoneNumber":"Phone number",
+      "submit":"Submit",
+      "save":"Save",
+      "clear":"Clear"
+  },
+
+  "RoomService":{
+    "roomService": "Room Service"
+
+  }
+  
+}

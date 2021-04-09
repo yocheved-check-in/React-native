@@ -1,0 +1,23 @@
+{
+  "common": {
+   
+  },
+  "CheckIn": {
+      "registration": "רישום",
+      "passport": "צילום דרכון",
+      "signature": "חתימה",
+      "welcomeText": "ביצוע צ'ק-אין דיגיטלי, אנא מלא את המידע הבא",
+      "firstName":"שם פרטי",
+      "lastName":"שם משפחה",
+      "phoneNumber":"מספר פלאפון",
+      "submit":"אישור",
+      "save":"שמירה",
+      "clear":"מחיקה"
+  },
+
+  "RoomService":{
+    "roomService": "מסעדת המלון"
+
+  }
+  
+}
