@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
     marginStart: 20,
   },
   name: {
-    fontSize: 35,
+    fontSize: 25,
     color: colors.white,
     bottom: 20,
     marginStart: 20,
@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   price: {
-    fontSize: 35,
+    fontSize: 25,
     color: colors.white,
     bottom: 20,
     marginEnd: 20,

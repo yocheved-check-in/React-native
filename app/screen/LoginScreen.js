@@ -69,6 +69,7 @@ function LoginScreen(props) {
   const parseLoginJson = (json) => {
     props.initRoomService(json.data.food);
     props.initUser(json.data.order.user);
+    props.initHouseKeeping(json.data.housekeeping);
     spaBuilder(json.data.spa);
   };
 
@@ -264,6 +265,12 @@ const mapDitpatchToProps = (dispatch) => {
     initSpa(data) {
       dispatch({
         type: "INIT_SPA_DATA",
+        payload: data,
+      });
+    },
+    initHouseKeeping(data) {
+      dispatch({
+        type: "INIT_HOUSE_DATA",
         payload: data,
       });
     },

@@ -125,11 +125,15 @@ class SpaItemScreen extends React.Component {
     };
 
     console.log(item);
-    
+
     return (
       <Animated.View style={[styles.container, this.state.animatedStyle]}>
         <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
-          <ImageItem image={item.image} name={item.name} price={item.price} />
+          <ImageItem
+            image={item.imgurl}
+            name={item.item_name}
+            price={item.price}
+          />
           <View style={styles.textContainer}>
             <Text style={styles.description}>{item.description}</Text>
           </View>
