@@ -1,26 +1,24 @@
 import React, { useState } from "react";
 import {
   View,
+  Button,
+  Platform,
   StyleSheet,
-  Text,
-  SafeAreaView,
-  InputText,
-  Modal,
   Image,
+  Text,
+  TextInput,
 } from "react-native";
-import { Fumi } from "react-native-textinput-effects";
-import { FontAwesome as Icon } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import colors from "../config/colors";
-import { TextInputMask } from "react-native-masked-text";
-import { DateInput } from "react-native-date-input";
-import dayjs from "dayjs";
-import moment from "moment";
-import { Button } from "react-native-paper";
-import { WebView } from "react-native-webview";
-import { BASE_URL } from "@env";
 import { connect } from "react-redux";
+import { Fumi } from "react-native-textinput-effects";
+import { FontAwesome as Icon } from "@expo/vector-icons";
+import moment from "moment";
+import { Colors } from "react-native/Libraries/NewAppScreen";
+import { moderateScale } from "react-native-size-matters";
+import { BASE_URL } from "@env";
 import { useNavigation } from "@react-navigation/native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 function LoginScreen(props) {
   const [date, setDate] = useState(new Date(1598051730000));
@@ -29,13 +27,7 @@ function LoginScreen(props) {
   const [show, setShow] = useState(false);
   const [orderNumber, setOrderNumber] = useState(0);
 
-  const [isLoading, setLoading] = useState(true);
-  const [data, setData] = useState([]);
-
-  let dateInput = null;
-
   const navigation = useNavigation();
-
   const onChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
     setShow(Platform.OS === "ios");
@@ -44,51 +36,65 @@ function LoginScreen(props) {
     setDateString(mydate);
     setShow(false);
   };
-
-  const openDatePicker = () => {
+  const showMode = () => {
     setShow(true);
+  };
+  const showDatepicker = () => {
+    showMode("date");
   };
 
   const login = () => {
-    var url =
-      BASE_URL +
-      "Signin?" +
-      new URLSearchParams({
-        OrderNumber: orderNumber,
-        ArrivalDate: dateString,
-        langId: 1,
+    if (orderNumber == "" && dateString == "") {
+      alert("Please Enter Reservation Code");
+    } else {
+      var url =
+        BASE_URL +
+        "Signin?" +
+        new URLSearchParams({
+          OrderNumber: orderNumber,
+          ArrivalDate: dateString,
+          langId: 1,
+        });
+
+      fetch(url)
+        .then((response) => response.json())
+        .then((json) => parseLoginJson(json))
+        .catch((error) => console.error(error))
+        .finally
+        // navigation.navigate("Main")
+        ();
+    }
+
+    const parseLoginJson = (json) => {
+      if (json.data) {
+        props.initRoomService(json.data.food);
+        props.initUser(json.data.order.user);
+        props.initHouseKeeping(json.data.housekeeping);
+        spaBuilder(json.data.spa);
+
+        navigation.navigate("Main");
+      } else {
+        alert("Error " + json.message);
+      }
+    };
+
+    const spaBuilder = (spa) => {
+      console.log(spa);
+      spa.map((category) => {
+        console.log(category);
+        category.items.map((item) => {
+          console.log(item);
+          sortLengthArray(item);
+        });
       });
 
-    fetch(url)
-      .then((response) => response.json())
-      .then((json) => parseLoginJson(json))
-      .catch((error) => console.error(error))
-      .finally(navigation.navigate("Main"));
-  };
-
-  const parseLoginJson = (json) => {
-    props.initRoomService(json.data.food);
-    props.initUser(json.data.order.user);
-    props.initHouseKeeping(json.data.housekeeping);
-    spaBuilder(json.data.spa);
-  };
-
-  const spaBuilder = (spa) => {
-    console.log(spa);
-    spa.map((category) => {
-      console.log(category);
-      category.items.map((item) => {
-        console.log(item);
-        sortLengthArray(item);
-      });
-    });
-
-    props.initSpa(spa);
+      props.initSpa(spa);
+    };
   };
 
   const sortLengthArray = (item) => {
     var lengthArray = [];
-    var tmp = {}; //create a temporary object
+    var tmp = {};
 
     item.length.forEach((element) => {
       console.log(element);
@@ -111,88 +117,96 @@ function LoginScreen(props) {
   };
 
   return (
+    // <View style={styles.container}>
     <SafeAreaView style={styles.container}>
-      <Image
-        style={styles.logo}
-        source={require("../assets/checkinLogo.png")}
-        width={110}
-        height={110}
-      />
-      <Fumi
-        label={"Order number"}
-        iconClass={Icon}
-        iconName={"reorder"}
-        iconColor={colors.primary}
-        iconSize={20}
-        iconWidth={40}
-        inputPadding={16}
-        style={styles.input}
-        onChangeText={(text) => setOrderNumber(text)}
-      />
+      <View style={styles.header}>
+        <Image
+          style={styles.logo}
+          source={require("../assets/checkinLogo.png")}
+        />
+        <Text style={styles.headerText}>checkIn</Text>
+      </View>
 
-      <Fumi
-        label={"Arrival date"}
-        iconClass={Icon}
-        iconName={"calendar"}
-        iconColor={colors.primary}
-        iconSize={20}
-        iconWidth={40}
-        inputPadding={16}
-        style={styles.input}
-        value={dateString}
-        onFocus={() => openDatePicker()}
-      />
-
-      <Button
-        color={colors.opacityWhite}
-        mode="contained"
-        onPress={() => login()}
-        labelStyle={styles.label}
-        style={styles.loginButton}
-      >
-        Login
-      </Button>
-
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={show}
-        onRequestClose={() => {
-          Alert.alert("Modal has been closed.");
-          setModalVisible(!show);
-        }}
-        style={styles.modal}
-        presentationStyle="overFullScreen"
-      >
+      <View style={styles.secondview}>
         <View
           style={{
-            flex: 1,
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
+            flexDirection: "row",
+            width: "80%",
+            alignSelf: "center",
+            marginLeft: 15,
+            marginTop: "10%",
           }}
         >
-          <View
+          <Image
+            style={styles.logoCalender}
+            source={require("../assets/onlycalender.png")}
+          />
+          <Text
             style={{
-              width: 300,
-              height: 300,
-              backgroundColor: colors.white,
-              borderRadius: 20,
-              borderWidth: 2,
-              borderColor: colors.primary,
+              color: colors.primary,
+              marginTop: 5,
             }}
           >
-            <DateTimePicker
-              value={date}
-              mode={mode}
-              is24Hour={true}
-              display="default"
-              onChange={onChange}
-              style={styles.datepicker}
-            />
-          </View>
+            ArrivalDate
+          </Text>
         </View>
-      </Modal>
+        <Fumi
+          marginBottom={11}
+          iconClass={Icon}
+          iconName={"calendar"}
+          iconColor={colors.primary}
+          iconSize={20}
+          iconWidth={40}
+          inputPadding={16}
+          style={styles.input}
+          value={dateString}
+          onFocus={() => showDatepicker()}
+        />
+      </View>
+      <View style={styles.ReserveView}>
+        <View
+          style={{
+            flexDirection: "row",
+            width: "80%",
+            alignSelf: "center",
+            marginLeft: 15,
+          }}
+        >
+          <Image
+            style={styles.datepicker}
+            source={require("../assets/calenderxxx.png")}
+          />
+          <Text
+            style={{
+              color: colors.primary,
+            }}
+          >
+            Reservation Code
+          </Text>
+        </View>
+        <TextInput
+          placeholder="Type Your 10 Character Code"
+          keyboardType={"numeric"}
+          placeholderTextColor="grey"
+          maxLength={10}
+          returnKeyType="done"
+          secureTextEntry={true}
+          style={styles.textInput}
+          onChangeText={(text) => setOrderNumber(text)}
+          onSubmitEditing={() => login()}
+        />
+      </View>
+
+      {show && (
+        <DateTimePicker
+          testID="dateTimePicker"
+          value={date}
+          mode={mode}
+          is24Hour={true}
+          display="default"
+          onChange={onChange}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -200,34 +214,28 @@ function LoginScreen(props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    width: "100%",
-    height: "100%",
   },
 
   input: {
     backgroundColor: colors.opacityWhite,
-    marginTop: 40,
     borderColor: colors.gray,
-    borderRadius: 15,
     borderWidth: 1,
-    marginLeft: 20,
-    marginRight: 20,
+    marginTop: 15,
+    width: "80%",
+    alignSelf: "center",
   },
 
   logo: {
+    height: 43,
+    width: 43,
+    marginRight: 10,
+  },
+  logoCalender: {
+    justifyContent: "center",
+    alignItems: "center",
     alignSelf: "center",
-    marginTop: 70,
-    marginBottom: 30,
-  },
-
-  datepicker: {
-    color: colors.primary,
-  },
-
-  modal: {
-    width: "50%",
-    height: "50%",
-    backgroundColor: colors.primary,
+    height: 30,
+    width: 30,
   },
 
   label: {
@@ -238,12 +246,47 @@ const styles = StyleSheet.create({
     color: colors.white,
   },
 
-  loginButton: {
-    marginTop: 70,
-    width: "90%",
-    marginBottom: 30,
-    alignSelf: "center",
+  header: {
+    width: "100%",
     backgroundColor: colors.primary,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 17,
+  },
+  headerText: {
+    color: colors.white,
+    fontSize: 25,
+    fontWeight: "bold",
+  },
+  secondview: {
+    width: "100%",
+    marginBottom: "5%",
+  },
+  ReserveView: {
+    width: "100%",
+    marginTop: 15,
+  },
+  datepicker: {
+    height: 30,
+    width: 30,
+    justifyContent: "center",
+    alignItems: "center",
+    alignSelf: "center",
+  },
+  text: {
+    fontSize: 12,
+    color: colors.primary,
+  },
+  textInput: {
+    color: colors.primary,
+    fontSize: 15,
+    width: "80%",
+    alignSelf: "center",
+    marginTop: "2%",
+    backgroundColor: colors.opacityWhite,
+    borderColor: colors.gray,
+    borderWidth: 1,
   },
 });
 
