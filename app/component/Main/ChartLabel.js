@@ -7,14 +7,7 @@ const ChartLabel = (props) => {
       source={
         props.text === "clicked" ? props.datum.pressedUrl : props.datum.url
       }
-      style={{
-        top: props.y - 20,
-        left: props.x - 20,
-        width: 40,
-        height: 40,
-        resizeMode: "contain",
-        position: "absolute",
-      }}
+      style={styles.imageStyle}
     />
   );
 };
@@ -25,6 +18,14 @@ const styles = StyleSheet.create({
     height: 40,
     resizeMode: "contain",
   },
+  imageStyle:{
+    top: props.y - 20,
+    left: props.x - 20,
+    width: 40,
+    height: 40,
+    resizeMode: "contain",
+    position: "absolute",
+  }
 });
 
 export default ChartLabel;

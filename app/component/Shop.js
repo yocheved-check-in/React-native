@@ -85,7 +85,7 @@ const Shop = () => {
       </View>
       <View>
         <Button title="Clear" onClick={() => setCart([])}>
-          {/* <Text>Clear</Text> */}
+       
         </Button>
       </View>
     </View>

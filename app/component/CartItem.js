@@ -9,14 +9,13 @@ function CartItem({ item, update }) {
   const [amount, setAmount] = useState(1);
 
   useEffect(() => {
-    console.log(item);
+
     setPrice(item.price);
-    console.log(price);
+  
     setAmount(item.amount);
   }, []);
 
   const amountChange = (value) => {
-    console.log("value " + value);
     setAmount(value);
     item.amount = value;
     update();

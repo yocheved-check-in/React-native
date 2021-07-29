@@ -41,14 +41,7 @@ function Chart({ data, colors }) {
     <View style={styles.container}>
       <Image
         source={require("../../assets/logo.jpg")}
-        style={{
-          width: innerRadius * 2 - 5,
-          height: innerRadius * 2 - 5,
-          borderRadius: innerRadius,
-          alignItems: "center",
-          position: "absolute",
-          justifyContent: "center",
-        }}
+        style={styles.logoImage}
       />
       <Svg width={screenWidth} height={screenHeight} style={styles.svg}>
         <VictoryPie
@@ -133,5 +126,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  logoImage:{
+    width: innerRadius * 2 - 5,
+    height: innerRadius * 2 - 5,
+    borderRadius: innerRadius,
+    alignItems: "center",
+    position: "absolute",
+    justifyContent: "center",
+  }
 });
 export default Chart;

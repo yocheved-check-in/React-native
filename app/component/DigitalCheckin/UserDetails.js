@@ -25,14 +25,12 @@ function UserDetails({ onSubmit }) {
       <Formik
         initialValues={{ firstName: "", lastName: "", phoneNumber: "" }}
         onSubmit={(values, actions) => {
-          // alert(JSON.stringify(values));
           onSubmit();
           setTimeout(() => {
             actions.setSubmitting(false);
           }, 1000);
         }}
         style={styles.form}
-        // validationSchema={validationSchema}
       >
         {(formikProps) => (
           <React.Fragment>
@@ -99,7 +97,7 @@ const styles = StyleSheet.create({
     height: 280,
     width: "80%",
     borderRadius: 20,
-    //marginTop: 30,
+   
     backgroundColor: colors.opacity,
     justifyContent: "center",
     alignSelf: "center",

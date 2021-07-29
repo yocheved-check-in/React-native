@@ -11,11 +11,7 @@ function QuestionView({ item, onAnswer }) {
       <Text style={styles.title}>{item.question}</Text>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          justifyContent: "center",
-          flexGrow: 1,
-          alignContent: "center",
-        }}
+        contentContainerStyle={styles.scrollStyle}
       >
         <RadioButtonRN
           data={item.answers}
@@ -30,7 +26,7 @@ function QuestionView({ item, onAnswer }) {
         </Text>
         {item.message && (
           <Button
-            //   titleStyle={{ fontWeight: "bold" }}
+            
             buttonStyle={styles.nextButton}
             title="Next"
             onPress={navigation.navigate("Main")}
@@ -45,6 +41,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     width: "100%",
+  },
+  scrollStyle:{
+    justifyContent: "center",
+    flexGrow: 1,
+    alignContent: "center",
   },
   textStyle: {
     color: colors.primary,

@@ -35,7 +35,7 @@ function ScrollItem({
         </TouchableOpacity>
       )}
       <View style={styles.textContainer}>
-        <View style={{ flexDirection: "column", flex: 1 }}>
+        <View style={styles.innerContainer}>
           <Text numberOfLines={1} style={[styles.text, styles.name]}>
             {name}
           </Text>
@@ -59,6 +59,10 @@ const styles = StyleSheet.create({
       width: 0,
       height: 5,
     },
+    innerContainer:{ 
+      flexDirection: "column", 
+      flex: 1 
+    },
     shadowOpacity: 0.34,
     shadowRadius: 6.27,
 
@@ -67,7 +71,7 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     height: 110,
-    //borderRadius: 15,
+   
   },
   text: {
     color: colors.primary,

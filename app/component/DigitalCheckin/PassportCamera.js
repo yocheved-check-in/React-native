@@ -36,7 +36,7 @@ export default function App({ onCapture }) {
       quality: 1,
     });
 
-    console.log(result);
+    
 
     if (!result.cancelled) {
       onCapture(result.uri);
@@ -46,31 +46,20 @@ export default function App({ onCapture }) {
   return (
     <View style={styles.container}>
       <Camera
-        style={{
-          width: "80%",
-          height: 250,
-        }}
+        style={styles.cameraSelect}
         ref={(r) => {
           camera = r;
         }}
       >
         <TouchableOpacity
           onPress={takePicture}
-          style={{
-            position: "absolute",
-            bottom: 10,
-            alignSelf: "center",
-          }}
+          style={styles.takeSnap}
         >
           <Icon name="camera" size={40} color={colors.primary} />
         </TouchableOpacity>
         <TouchableOpacity
           onPress={pickImage}
-          style={{
-            position: "absolute",
-            bottom: 10,
-            right: 10,
-          }}
+          style={styles.Pickimage}
         >
           <Icon name="photo" size={25} color={colors.primary} />
         </TouchableOpacity>
@@ -85,4 +74,18 @@ const styles = StyleSheet.create({
     backgroundColor: colors.opacity,
     alignItems: "center",
   },
+  cameraSelect:{
+    width: "80%",
+    height: 250,
+  },
+  takeSnap:{
+    position: "absolute",
+    bottom: 10,
+    alignSelf: "center",
+  },
+  pickImage:{
+    position: "absolute",
+    bottom: 10,
+    right: 10,
+  }
 });

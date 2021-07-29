@@ -27,7 +27,6 @@ function CircleIcon({ color, size, icon, bottom }) {
 const styles = StyleSheet.create({
   circle: {
     position: "absolute",
-    //bottom: 10,
     justifyContent: "center",
     alignItems: "center",
     alignSelf: "center",

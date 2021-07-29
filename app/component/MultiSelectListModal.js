@@ -9,7 +9,7 @@ function MultiSelectListModal({ data, setVisble, title, visible }) {
   state = { selectedLists: [] };
 
   onSelectionsChange = (selectedLists) => {
-    // selectedLists is array of { label, value }
+  
     this.setState({ selectedLists });
     console.log(selectedLists);
   };
@@ -30,17 +30,17 @@ function MultiSelectListModal({ data, setVisble, title, visible }) {
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
           <View style={styles.container}>
-            {/* <View style={styles.innerView}> */}
+          
             <CustomMultiPicker
               options={data}
-              search={true} // should show search bar?
-              multiple={true} //
+              search={true} 
+              multiple={true} 
               placeholder={"Search"}
               placeholderTextColor={colors.primary}
-              returnValue={"label"} // label or value
+              returnValue={"label"} 
               callback={(res) => {
                 console.log(res);
-              }} // callback, array of selected items
+              }} 
               rowBackgroundColor={"#eee"}
               rowHeight={40}
               rowRadius={5}
@@ -50,9 +50,9 @@ function MultiSelectListModal({ data, setVisble, title, visible }) {
               iconSize={25}
               selectedIconName={"ios-checkmark-circle-outline"}
               unselectedIconName={"ios-radio-button-off"}
-              //scrollViewHeight={200}
+             
             />
-            {/* </View> */}
+         
           </View>
           <TouchableOpacity
             style={styles.closeIcon}

@@ -10,7 +10,7 @@ const styles = StyleSheet.create({
   container: {
     height: 1,
     width: "100%",
-    backgroundColor: colors.lightGray,
+    backgroundColor: colors.gray,
   },
 });
 export default Separate;

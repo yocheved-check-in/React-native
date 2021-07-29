@@ -28,12 +28,12 @@ interface StaticTabbarProps {
 
 export default class StaticTabbar extends React.PureComponent<StaticTabbarProps> {
   values: Animated.Value[] = [];
-  
+
   constructor(props: StaticTabbarProps) {
     super(props);
     const { tabs } = this.props;
     this.values = tabs.map(
-      (tab, index) => new Animated.Value(index === 2 ? 1: 0)
+      (tab, index) => new Animated.Value(index === 2 ? 1 : 0)
     );
     this.onPress(2)
 
@@ -44,7 +44,7 @@ export default class StaticTabbar extends React.PureComponent<StaticTabbarProps>
   onPress = (index: number) => {
     const { value, tabs } = this.props;
     const tabWidth = width / tabs.length;
-    
+
     Animated.sequence([
       Animated.parallel(
         this.values.map((v) =>
@@ -57,14 +57,14 @@ export default class StaticTabbar extends React.PureComponent<StaticTabbarProps>
       ),
       Animated.parallel([
         Animated.spring(value, {
-          toValue: tabWidth *index,
+          toValue: tabWidth * index,
           useNativeDriver: true,
         }),
         Animated.spring(this.values[index], {
           toValue: 1,
           useNativeDriver: true,
         }),
-        
+
       ]),
     ]).start();
   };
@@ -97,7 +97,7 @@ export default class StaticTabbar extends React.PureComponent<StaticTabbarProps>
             <React.Fragment {...{ key }}>
               <TouchableWithoutFeedback onPress={() => onPress(key)}>
                 <Animated.View style={[styles.tab, { opacity }]}>
-                <Image
+                  <Image
                     source={{ uri: tab.name }}
                     resizeMode="contain"
                     style={{
@@ -121,10 +121,10 @@ export default class StaticTabbar extends React.PureComponent<StaticTabbarProps>
                   transform: [{ translateY }],
                 }}
               >
-                <Animatable.View  style={styles.activeIcon}>
-                <Animatable.Image direction="alternate-reverse" 
-                animation={(this.isCheckIn && key===2)? "rotate":""}
-                iterationCount="infinite"  
+                <Animatable.View style={styles.activeIcon}>
+                  <Animatable.Image direction="alternate-reverse"
+                    animation={(this.isCheckIn && key === 2) ? "rotate" : ""}
+                    iterationCount="infinite"
                     source={{ uri: tab.name }}
                     style={[styles.icon, { tintColor: colors.primary }]}
                   />

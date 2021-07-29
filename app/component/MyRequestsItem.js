@@ -11,14 +11,12 @@ function MyRequestsItem({ item, onDelete }) {
     console.log(value);
     setAmount(value);
     item.amount = value;
-    //update();
+   
   };
 
   return (
     <View style={styles.container}>
-      {/* <View style={styles.amount}> */}
-
-      {/* </View> */}
+    
       <View style={styles.row}>
         <View style={styles.column}>
           <MaterialCommunityIcons
@@ -53,13 +51,7 @@ function MyRequestsItem({ item, onDelete }) {
           />
         </View>
       </View>
-      {/* <MaterialCommunityIcons
-        style={styles.deleteIcon}
-        name="delete-circle-outline"
-        size={24}
-        color={colors.primary}
-        onPress={onDelete}
-      /> */}
+     
     </View>
   );
 }
@@ -80,7 +72,7 @@ const styles = StyleSheet.create({
     fontSize: 17,
     justifyContent: "center",
     fontWeight: "bold",
-    // marginLeft: 15,
+    
   },
   icon: {
     marginBottom: 10,
