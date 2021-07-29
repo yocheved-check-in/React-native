@@ -167,9 +167,6 @@ function CheckinScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    // justifyContent: "center",
-    // alignContent: "center",
-    // alignItems: "center",
     flexGrow: 1,
     width: "100%",
     flex: 1,

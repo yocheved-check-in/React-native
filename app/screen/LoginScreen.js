@@ -1,95 +1,195 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   View,
-  Button,
-  Platform,
   StyleSheet,
   Image,
   Text,
   TextInput,
+  StatusBar,
+  ScrollView,
+  ActivityIndicator,
 } from "react-native";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import TopHeader from "../component/TopHeader";
 import colors from "../config/colors";
 import { connect } from "react-redux";
-import { Fumi } from "react-native-textinput-effects";
-import { FontAwesome as Icon } from "@expo/vector-icons";
+import NetInfo from "@react-native-community/netinfo";
 import moment from "moment";
-import { Colors } from "react-native/Libraries/NewAppScreen";
 import { moderateScale } from "react-native-size-matters";
 import { BASE_URL } from "@env";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, CommonActions } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import DatePicker from "../component/datePicker";
+import { KeyboardAvoidingView } from "react-native";
+import DatabaseService from "../services/DatabaseService";
+import messaging from "@react-native-firebase/messaging";
+import initializeNotification from "../services/initializeNotification";
 
 function LoginScreen(props) {
-  const [date, setDate] = useState(new Date(1598051730000));
-  const [dateString, setDateString] = useState("");
-  const [mode, setMode] = useState("date");
-  const [show, setShow] = useState(false);
+  let dbService = new DatabaseService();
+
+  const [checkInDate, setCheckInDate] = useState("");
+
+  const [isCheckInDatePickerVisible, setCheckInDatePickerVisibility] =
+    useState(false);
   const [orderNumber, setOrderNumber] = useState(0);
-
+  const [fcmToken, setFcmToken] = useState("");
+  const [loader, setLoader] = useState(false);
   const navigation = useNavigation();
-  const onChange = (event, selectedDate) => {
-    const currentDate = selectedDate || date;
-    setShow(Platform.OS === "ios");
-    setDate(currentDate);
-    var mydate = moment(currentDate).format("DD-MM-YYYY");
-    setDateString(mydate);
-    setShow(false);
-  };
-  const showMode = () => {
-    setShow(true);
-  };
-  const showDatepicker = () => {
-    showMode("date");
+
+  const showCheckInDatePicker = () => {
+    setCheckInDatePickerVisibility(true);
   };
 
-  const login = () => {
-    if (orderNumber == "" && dateString == "") {
+  const hideCheckInDatePicker = () => {
+    setCheckInDatePickerVisibility(false);
+  };
+
+  const handleCheckInConfirm = (date) => {
+    if (date) {
+      var formatDate = moment(date).format("DD-MM-YYYY");
+      setCheckInDate(formatDate);
+      hideCheckInDatePicker();
+    }
+  };
+
+  const getDeviceToken = () => {
+    messaging()
+      .getToken()
+      .then((fcmToken) => {
+        if (fcmToken) {
+          login(fcmToken);
+        }
+      })
+      .catch((err) => {});
+  };
+
+  useEffect(() => {
+    initializeNotification();
+
+    dbService.getUserDetail().then((json) => {
+      if (json != null) {
+        saveLoginData(JSON.parse(json));
+        firebaseService.messaging().onNotificationOpenedApp((remoteMessage) => {
+          // navigation.navigate(remoteMessage.data.type);
+        });
+        // Check whether an initial notification is available
+        firebaseService
+          .messaging()
+          .getInitialNotification()
+          .then((remoteMessage) => {
+            if (remoteMessage) {
+              // setInitialRoute(remoteMessage.data.type); // e.g. "Settings"
+            }
+            setLoading(false);
+          });
+      } else {
+        navigation.navigate("Login");
+      }
+    });
+  });
+
+  const getNetworkConnection = () => {
+    NetInfo.fetch().then((state) => {
+      if (state.isConnected == true) {
+        // login();
+        getDeviceToken();
+      } else {
+        alert("please check Network connection");
+      }
+    });
+  };
+
+  const login = (fcmToken) => {
+    let CheckInDate = moment(checkInDate).format("YYYY-MM-DD");
+    if (orderNumber == "" || CheckInDate == "") {
       alert("Please Enter Reservation Code");
     } else {
+      setLoader(true);
+
       var url =
         BASE_URL +
         "Signin?" +
         new URLSearchParams({
-          OrderNumber: orderNumber,
-          ArrivalDate: dateString,
+          reservationId: orderNumber,
+          checkInDate: checkInDate,
           langId: 1,
+          device_token: fcmToken,
         });
-
       fetch(url)
         .then((response) => response.json())
-        .then((json) => parseLoginJson(json))
-        .catch((error) => console.error(error))
-        .finally
-        // navigation.navigate("Main")
-        ();
-    }
+        .then((json) => {
+          if (json.status == true) {
+            json.reservationnumber = orderNumber;
 
-    const parseLoginJson = (json) => {
-      if (json.data) {
-        props.initRoomService(json.data.food);
-        props.initUser(json.data.order.user);
-        props.initHouseKeeping(json.data.housekeeping);
-        spaBuilder(json.data.spa);
-
-        navigation.navigate("Main");
-      } else {
-        alert("Error " + json.message);
-      }
-    };
-
-    const spaBuilder = (spa) => {
-      console.log(spa);
-      spa.map((category) => {
-        console.log(category);
-        category.items.map((item) => {
-          console.log(item);
-          sortLengthArray(item);
+            dbService.saveUserDetail(json);
+            parseLoginJson(json, true);
+            // getDeviceToken();
+          } else {
+            alert(json.message);
+            setLoader(false);
+          }
+        })
+        .catch((error) => {
+          setLoader(false);
         });
-      });
+    }
+  };
 
-      props.initSpa(spa);
-    };
+  const parseLoginJson = (json) => {
+    setLoader(false);
+
+    if (json.data) {
+      props.initRoomService(json.data.food);
+      props.initOrder(json.data.order);
+      props.initUser(json.data.order.user);
+      props.initHouseKeeping(json.data.housekeeping);
+
+      props.initforYou(json.data.for_you);
+      spaBuilder(json.data.spa);
+
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: "Main" }],
+        })
+      );
+    } else {
+      alert("Error " + json.message);
+    }
+  };
+
+  const saveLoginData = (loginData) => {
+    var url =
+      BASE_URL +
+      "Signin?" +
+      new URLSearchParams({
+        reservationId: loginData.reservationnumber,
+        checkInDate: loginData.data.order.check_in,
+        langId: 1,
+      });
+    fetch(url)
+      .then((response) => response.json())
+      .then((json) => {
+        // let res = JSON.parse(json);
+        if (json.status == true) {
+          json.reservationnumber = loginData.reservationnumber;
+          dbService.saveUserDetail(json);
+
+          parseLoginJson(json);
+        } else {
+          parseLoginJson(loginData);
+        }
+      })
+      .catch((error) => {});
+  };
+  const spaBuilder = (spa) => {
+    spa.map((category) => {
+      category.items.map((item) => {
+        sortLengthArray(item);
+      });
+    });
+
+    props.initSpa(spa);
   };
 
   const sortLengthArray = (item) => {
@@ -97,13 +197,11 @@ function LoginScreen(props) {
     var tmp = {};
 
     item.length.forEach((element) => {
-      console.log(element);
-
       if (lengthArray.length === 0)
         lengthArray.push({
           value: element + " min",
           label: element + " min",
-          selected: "true",
+          selected: "false",
         });
       else {
         lengthArray.push({
@@ -111,102 +209,79 @@ function LoginScreen(props) {
           label: element + " min",
         });
       }
-      console.log("lengthArray" + lengthArray);
+
       item.length = lengthArray;
     });
   };
 
   return (
-    // <View style={styles.container}>
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Image
-          style={styles.logo}
-          source={require("../assets/checkinLogo.png")}
+      <StatusBar
+        backgroundColor={colors.primary}
+        barStyle="dark-content"
+        translucent={true}
+        hidden={false}
+      />
+      <TopHeader
+        title={"Check in"}
+        style={styles.header}
+        logoImage={require("../assets/TopHeader/Logo.png")}
+      />
+      {loader ? (
+        <ActivityIndicator
+          size="large"
+          style={styles.loader}
+          color={colors.primary}
         />
-        <Text style={styles.headerText}>checkIn</Text>
-      </View>
+      ) : null}
+      <KeyboardAvoidingView style={{ flex: 1, paddingBottom: "5%" }}>
+        <ScrollView style={{ flexGrow: 1 }}>
+          <View style={styles.datePickerView}>
+            <View style={styles.datePickerContainer}>
+              <Image
+                style={styles.logoCalender}
+                source={require("../assets/onlycalender.png")}
+              />
+              <Text style={styles.arrivalDateText}>CheckIn Date</Text>
+            </View>
+            <DatePicker
+              iconName={"calendar"}
+              containerDatePicker={styles.pickerContainer}
+              date={checkInDate}
+              isDatePickerVisible={isCheckInDatePickerVisible}
+              setDate={(date) => handleCheckInConfirm(date)}
+              hideDatePicker={hideCheckInDatePicker}
+              showDatePicker={showCheckInDatePicker}
+            />
+          </View>
 
-      <View style={styles.secondview}>
-        <View
-          style={{
-            flexDirection: "row",
-            width: "80%",
-            alignSelf: "center",
-            marginLeft: 15,
-            marginTop: "10%",
-          }}
-        >
-          <Image
-            style={styles.logoCalender}
-            source={require("../assets/onlycalender.png")}
-          />
-          <Text
-            style={{
-              color: colors.primary,
-              marginTop: 5,
-            }}
-          >
-            ArrivalDate
-          </Text>
-        </View>
-        <Fumi
-          marginBottom={11}
-          iconClass={Icon}
-          iconName={"calendar"}
-          iconColor={colors.primary}
-          iconSize={20}
-          iconWidth={40}
-          inputPadding={16}
-          style={styles.input}
-          value={dateString}
-          onFocus={() => showDatepicker()}
-        />
-      </View>
-      <View style={styles.ReserveView}>
-        <View
-          style={{
-            flexDirection: "row",
-            width: "80%",
-            alignSelf: "center",
-            marginLeft: 15,
-          }}
-        >
-          <Image
-            style={styles.datepicker}
-            source={require("../assets/calenderxxx.png")}
-          />
-          <Text
-            style={{
-              color: colors.primary,
-            }}
-          >
-            Reservation Code
-          </Text>
-        </View>
-        <TextInput
-          placeholder="Type Your 10 Character Code"
-          keyboardType={"numeric"}
-          placeholderTextColor="grey"
-          maxLength={10}
-          returnKeyType="done"
-          secureTextEntry={true}
-          style={styles.textInput}
-          onChangeText={(text) => setOrderNumber(text)}
-          onSubmitEditing={() => login()}
-        />
-      </View>
+          <View style={styles.ReserveView}>
+            <View style={styles.reservedNumber}>
+              <Image
+                style={styles.datepicker}
+                source={require("../assets/calenderxxx.png")}
+              />
+              <Text
+                style={{
+                  color: colors.primary,
+                }}
+              >
+                Reservation Code
+              </Text>
+            </View>
 
-      {show && (
-        <DateTimePicker
-          testID="dateTimePicker"
-          value={date}
-          mode={mode}
-          is24Hour={true}
-          display="default"
-          onChange={onChange}
-        />
-      )}
+            <TextInput
+              placeholder="Type Your 10 Character Code"
+              placeholderTextColor="grey"
+              maxLength={10}
+              returnKeyType="done"
+              style={styles.textInput}
+              onChangeText={(text) => setOrderNumber(text)}
+              onSubmitEditing={() => getNetworkConnection()}
+            />
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -215,7 +290,21 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-
+  donText: {
+    color: colors.white,
+    alignSelf: "center",
+    fontSize: moderateScale(14),
+  },
+  loader: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1,
+  },
   input: {
     backgroundColor: colors.opacityWhite,
     borderColor: colors.gray,
@@ -224,7 +313,47 @@ const styles = StyleSheet.create({
     width: "80%",
     alignSelf: "center",
   },
-
+  pickerContainer: {
+    flexDirection: "row",
+    color: colors.primary,
+    fontSize: 15,
+    width: "80%",
+    alignSelf: "center",
+    alignItems: "center",
+    paddingVertical: moderateScale(12),
+    marginTop: "2%",
+    paddingHorizontal: "2%",
+    backgroundColor: colors.opacityWhite,
+    borderColor: colors.gray,
+    borderWidth: 1,
+  },
+  doneButton: {
+    backgroundColor: colors.primary,
+    width: "50%",
+    alignSelf: "center",
+    paddingVertical: moderateScale(15),
+    borderRadius: moderateScale(8),
+    marginVertical: "20%",
+  },
+  reservedNumber: {
+    flexDirection: "row",
+    width: "80%",
+    alignSelf: "center",
+    marginLeft: 15,
+    alignItems: "center",
+  },
+  arrivalDateText: {
+    color: colors.primary,
+    marginTop: 5,
+  },
+  datePickerContainer: {
+    flexDirection: "row",
+    width: "80%",
+    alignSelf: "center",
+    marginLeft: 15,
+    marginTop: "10%",
+    alignItems: "center",
+  },
   logo: {
     height: 43,
     width: 43,
@@ -236,6 +365,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     height: 30,
     width: 30,
+    marginRight: moderateScale(5),
   },
 
   label: {
@@ -246,26 +376,28 @@ const styles = StyleSheet.create({
     color: colors.white,
   },
 
-  header: {
+  headerContainer: {
     width: "100%",
     backgroundColor: colors.primary,
     flexDirection: "row",
     justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 17,
+    paddingVertical: moderateScale(15),
   },
   headerText: {
     color: colors.white,
-    fontSize: 25,
-    fontWeight: "bold",
+    fontSize: moderateScale(25),
   },
-  secondview: {
+  headerImage: {
+    height: moderateScale(40),
+    width: moderateScale(40),
+    marginRight: moderateScale(5),
+  },
+  datePickerView: {
     width: "100%",
-    marginBottom: "5%",
   },
   ReserveView: {
     width: "100%",
-    marginTop: 15,
+    marginTop: "8%",
   },
   datepicker: {
     height: 30,
@@ -273,6 +405,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     alignSelf: "center",
+    marginRight: moderateScale(5),
   },
   text: {
     fontSize: 12,
@@ -287,6 +420,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.opacityWhite,
     borderColor: colors.gray,
     borderWidth: 1,
+    paddingLeft: "5%",
   },
 });
 
@@ -295,6 +429,12 @@ const mapDitpatchToProps = (dispatch) => {
     initUser(data) {
       dispatch({
         type: "INIT_USER",
+        payload: data,
+      });
+    },
+    initOrder(data) {
+      dispatch({
+        type: "INIT_ORDER",
         payload: data,
       });
     },
@@ -314,6 +454,12 @@ const mapDitpatchToProps = (dispatch) => {
     initHouseKeeping(data) {
       dispatch({
         type: "INIT_HOUSE_DATA",
+        payload: data,
+      });
+    },
+    initforYou(data) {
+      dispatch({
+        type: "INIT_FOR_DATA",
         payload: data,
       });
     },

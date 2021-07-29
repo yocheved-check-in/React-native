@@ -41,12 +41,8 @@ export const renderActions = (props) => (
       />
     )}
     options={{
-      "Choose From Library": () => {
-        console.log("Choose From Library");
-      },
-      Cancel: () => {
-        console.log("Cancel");
-      },
+      "Choose From Library": () => {},
+      Cancel: () => {},
     }}
     optionTintColor="#222B45"
   />
@@ -80,9 +76,9 @@ export const renderSend = (props) => (
       marginHorizontal: 4,
     }}
   >
-    <Image
+    {/* <Image
       style={{ width: 32, height: 32 }}
       source={require("../assets/chat/sendButton.png")}
-    />
+    /> */}
   </Send>
 );

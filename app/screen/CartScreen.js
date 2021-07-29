@@ -26,7 +26,6 @@ function CartScreen(props) {
     type === CATEGORY.ROOM_SERVICE ? props.roomServiceCart : props.spaCart;
 
   useEffect(() => {
-    console.log("type " + type);
     total();
   }, []);
 
@@ -48,7 +47,6 @@ function CartScreen(props) {
   };
 
   const checkoutPressed = (props) => {
-    console.log(props);
     props.cartDelete(type);
     setCartTotal(0);
     props.navigation.goBack();

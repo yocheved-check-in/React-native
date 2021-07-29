@@ -77,10 +77,7 @@ const renderItem = ({ item, index }) => {
 };
 
 const onAnswer = (e) => {
-  console.log(this._carousel);
-  //console.log(this._carousel.);
   this._carousel.snapToNext();
-  console.log(e);
 };
 
 function PreArrivelScreen(props) {

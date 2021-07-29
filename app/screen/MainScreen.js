@@ -1,100 +1,181 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
+  AppState,
   View,
   StyleSheet,
-  Image,
   Text,
-  ImageBackground,
-  ScrollView,
-  TouchableOpacity,
+  StatusBar,
+  FlatList,
+  Alert,
+  // BackHandler
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, StackActions } from "@react-navigation/native";
 import { moderateScale } from "react-native-size-matters";
 import colors from "../config/colors";
+import TopHeader from "../component/TopHeader";
+import { CATEGORY } from "../config/enums";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { connect } from "react-redux";
+import FabIcon from "../component/ConstantStyles/FabIcon";
+import MainServices from "../component/mainScreen/MainScreenComponent";
+import { color } from "react-native-elements/dist/helpers";
+import Signature from "../component/DigitalCheckin/Signature";
+import { NetInfoCellularGeneration } from "@react-native-community/netinfo";
+import DatabaseService from "../services/DatabaseService";
+const services = [
+  {
+    name: "For You",
+    middleImage: require("../assets/mainScreen/blueHeart.png"),
+    backgroundImage: require("../assets/mainScreen/backgroundGift.png"),
+    screen: "ForYouScreen",
+  },
+  {
+    name: "Spa",
+    middleImage: require("../assets/mainScreen/spa1.png"),
+    backgroundImage: require("../assets/mainScreen/backgroundCousin.png"),
+    screen: "Spa",
+  },
+  {
+    name: "HouseKeeping",
+    middleImage: require("../assets/mainScreen/houseKeeping1.png"),
+    backgroundImage: require("../assets/mainScreen/flower.png"),
+    screen: "HouseKeepingAllPackages",
+  },
+  {
+    name: "Room Service",
+    middleImage: require("../assets/mainScreen/roomService.png"),
+    backgroundImage: require("../assets/roomServiceBackground.png"),
+    screen: "RoomServiceScreen",
+  },
+  {
+    name: "Attractions",
+    middleImage: require("../assets/mainScreen/attractions.png"),
+    backgroundImage: require("../assets/AttractionsBackground.png"),
+    screen: "CommingSoon",
+  },
+  {
+    name: "Tickets",
+    middleImage: require("../assets/mainScreen/Tickets.png"),
+    backgroundImage: require("../assets/TicketsBackground.png"),
+    screen: "CommingSoon",
+  },
+];
 
-function MainScreen() {
+function MainScreen(props) {
+  let dbService = new DatabaseService();
+
+  // useEffect(() => {
+  //   dbService.getUserDetail().then((json) => {});
+  //   AppState.addEventListener("change", _handleAppStateChange);
+
+  //   return () => {
+  //     AppState.removeEventListener("change", _handleAppStateChange);
+  //   };
+  // });
+
+  const [isSelected, isSetSelected] = useState(null);
+  const [signature, setSign] = useState(null);
   navigation = useNavigation();
+  const appState = useRef(AppState.currentState);
+  const [appStateVisible, setAppStateVisible] = useState(appState.current);
+
+  const handleSignature = (signature) => {
+    // onSubmit(signature);
+    alert("1234");
+    setSign(signature);
+  };
+
+  const _handleAppStateChange = (nextAppState) => {
+    if (nextAppState === "background") {
+    }
+
+    appState.current = nextAppState;
+    setAppStateVisible(appState.current);
+  };
+
+  const getNetworkConnection = () => {
+    NetInfo.fetch().then((state) => {
+      if (state.isConnected == true) {
+        login();
+      } else {
+        alert("please check Network connection");
+      }
+    });
+  };
+
   return (
-    <View style={styles.container}>
-      <SafeAreaView>
-        <View style={styles.header}>
-          <Image
-            style={styles.logo}
-            source={require("../assets/sideicon.png")}
-          />
-          <View style={styles.midheader}>
-            <Text style={styles.headerText}>GORDONTA</Text>
-          </View>
-        </View>
-      </SafeAreaView>
+    <SafeAreaView style={styles.container}>
+      <StatusBar
+        backgroundColor={colors.primary}
+        barStyle="dark-content"
+        translucent={true}
+        hidden={false}
+      />
 
-      <View style={styles.secondcontainer}>
-        <Text style={styles.bigtext}>Welcome David,</Text>
-        <Text style={styles.smalltext}>What Would You Like to Do?</Text>
+      <TopHeader
+        title={"GORDONTA"}
+        headerImage={require("../assets/TopHeader/sideIcon.png")}
+        style={styles.header}
+        logoImage={require("../assets/TopHeader/logo1.png")}
+        type={CATEGORY.ROOM_SERVICE}
+        {...navigation}
+        rightImage={require("../assets/TopHeader/back-arrow.png")}
+      />
 
-        <TouchableOpacity
-          onPress={() => navigation.navigate("RoomService")}
-          style={styles.RoomView}
-        >
-          <ImageBackground
-            style={styles.image}
-            source={require("../assets/backgroundgift.png")}
-          >
-            <View style={styles.smalldiv}>
-              <Image
-                style={styles.heart}
-                source={require("../assets/blueheart.png")}
-              />
-              <Text style={styles.smalldivtext}>For You</Text>
-            </View>
-          </ImageBackground>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => navigation.navigate("Spa")}
-          style={styles.SpaView}
-        >
-          <ImageBackground
-            style={styles.image}
-            source={require("../assets/backgroundCoussin.png")}
-          >
-            <View style={styles.smalldiv}>
-              <Image
-                style={styles.spa}
-                source={require("../assets/spa1.png")}
-              />
-              <Text style={styles.spatext}>Spa</Text>
-            </View>
-          </ImageBackground>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => navigation.navigate("HouseKeeping")}
-          style={styles.HouseView}
-        >
-          <ImageBackground
-            style={styles.image}
-            source={require("../assets/backgroundflower.png")}
-          >
-            <View style={styles.smalldiv}>
-              <Image
-                style={styles.housekeeping}
-                source={require("../assets/housekeeping1.png")}
-              />
-              <Text style={styles.housetext}>HouseKeeping</Text>
-            </View>
-            <TouchableOpacity style={styles.TouchableOpacityStyle}>
-              <Image
-                style={styles.fabimage}
-                source={require("../assets/fabicon.png")}
-              />
-              <Text style={styles.fabtext}>Preferences</Text>
-            </TouchableOpacity>
-          </ImageBackground>
-        </TouchableOpacity>
+      <View style={styles.userContainer}>
+        <Text style={styles.welcomeText}>Welcome {props.user.name},</Text>
+        <Text style={styles.basicText}>What Would You Like to Do?</Text>
       </View>
-    </View>
+
+      <FlatList
+        numColumns={1}
+        contentContainerStyle={{ flexGrow: 1 }}
+        data={services}
+        showsVerticalScrollIndicator={false}
+        renderItem={({ item, index }) => (
+          <MainServices
+            name={item.name}
+            backgroundImage={item.backgroundImage}
+            middleImage={item.middleImage}
+            onPress={() => {
+              isSetSelected(index);
+              navigation.navigate(item.screen);
+            }}
+            highlightedStyle={[
+              styles.changeImageColorView,
+              {
+                backgroundColor:
+                  index == isSelected ? "rgba(0, 133, 310, 0.6)" : null,
+              },
+            ]}
+            textStyle={[
+              styles.serviceName,
+              {
+                color:
+                  index == "0"
+                    ? colors.primary
+                    : index == "1"
+                    ? colors.greenColor
+                    : index == "3"
+                    ? colors.orange
+                    : index == "4"
+                    ? colors.purple
+                    : index == "2"
+                    ? colors.pinkColor
+                    : colors.primary,
+              },
+            ]}
+          />
+        )}
+      />
+      <View style={styles.fabIconContainer}>
+        <FabIcon
+          fabOnPress={() => navigation.navigate("CheckInScreen")}
+          image={require("../assets/fabIcon/checkin.png")}
+          name={"check in"}
+        />
+      </View>
+    </SafeAreaView>
   );
 }
 
@@ -102,124 +183,45 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  logo: {
-    alignSelf: "center",
-    marginTop: 10,
-  },
-  headerText: {
-    color: colors.white,
-    fontSize: 20,
-    fontFamily: "roboto",
-    marginTop: 5,
-  },
-  header: {
-    width: "100%",
-    backgroundColor: colors.primary,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 17,
-  },
-  midheader: {
-    width: "80%",
-    alignItems: "center",
-    alignSelf: "center",
-  },
-  secondcontainer: {
+  userContainer: {
     width: "90%",
     textAlign: "center",
     alignSelf: "center",
     justifyContent: "center",
+    marginTop: moderateScale(15),
   },
-  bigtext: {
-    fontSize: 22,
+  welcomeText: {
+    fontSize: 21,
     color: colors.primary,
+    fontFamily: "Roboto-Regular",
   },
-  smalltext: {
-    fontSize: 15,
+  basicText: {
+    fontSize: 17,
     color: colors.primary,
+    fontFamily: "Roboto-Regular",
   },
-  RoomView: {
-    height: "28.5%",
-  },
-  SpaView: {
-    height: "28.5%",
-  },
-  HouseView: {
-    height: "28.5%",
-  },
-  image: {
-    resizeMode: "cover",
+  changeImageColorView: {
+    alignSelf: "center",
     justifyContent: "center",
-    height: moderateScale(220),
-    borderRadius: 8,
+    height: moderateScale(210),
+    width: moderateScale(330),
+    marginBottom: moderateScale(15),
   },
-  smallimage: {
-    height: 10,
-    width: 20,
-  },
-  smalldiv: {
-    height: 90,
-    width: 130,
-    textAlign: "center",
+  serviceName: {
+    fontSize: 15.5,
     alignSelf: "center",
-    justifyContent: "space-evenly",
-    backgroundColor: colors.opacityWhite,
-    borderRadius: 10,
+    fontFamily: "Roboto-Light",
+    color: "#3C3C3C",
   },
-  heart: {
-    height: 35,
-    width: 40,
-    alignSelf: "center",
-  },
-  smalldivtext: {
-    fontSize: 13,
-    color: colors.primary,
-    alignSelf: "center",
-  },
-  spa: {
-    height: 35,
-    width: 55,
-    alignSelf: "center",
-  },
-  spatext: {
-    fontSize: 13,
-    color: "green",
-    alignSelf: "center",
-  },
-  housekeeping: {
-    height: 45,
-    width: 51,
-    alignSelf: "center",
-  },
-  housetext: {
-    fontSize: 13,
-    alignSelf: "center",
-    color: colors.pink,
-  },
-  TouchableOpacityStyle: {
+  fabIconContainer: {
     position: "absolute",
-    width: 64,
-    height: 64,
-    alignItems: "center",
-    justifyContent: "center",
-    right: 30,
-    bottom: 30,
-    backgroundColor: colors.opacityWhite,
-    borderRadius: 50,
-  },
-  fabimage: {
-    width: 30,
-    height: 30,
-  },
-  fabtext: {
-    fontSize: 8,
-    color: colors.primary,
+    bottom: 0,
+    right: 0,
   },
 });
 
 const mapStateToProps = (state) => {
-  return { roomServiceData: state.roomServiceData };
+  return { roomServiceData: state.roomServiceData, user: state.user };
 };
 
-export default MainScreen;
+export default connect(mapStateToProps, null)(MainScreen);

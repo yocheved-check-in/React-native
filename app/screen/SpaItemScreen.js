@@ -6,6 +6,7 @@ import {
   Text,
   Dimensions,
   Animated,
+  StatusBar,
 } from "react-native";
 import ImageItem from "../component/ImageItem";
 import colors from "../config/colors";
@@ -80,7 +81,7 @@ class SpaItemScreen extends React.Component {
 
     const addItem = () => {
       const n = spaCart.indexOf(item);
-      console.log(n);
+
       if (n == -1) {
         item["amount"] = 1;
         spaCart.push(item);
@@ -124,8 +125,6 @@ class SpaItemScreen extends React.Component {
       ]).start(() => this.props.navigation.goBack());
     };
 
-    console.log(item);
-
     return (
       <Animated.View style={[styles.container, this.state.animatedStyle]}>
         <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
@@ -143,7 +142,7 @@ class SpaItemScreen extends React.Component {
             <RadioButtonRN
               data={sinOrCoup}
               box={false}
-              selectedBtn={(e) => console.log(e)}
+              selectedBtn={(e) => {}}
               textStyle={styles.textStyle}
             />
           </View>
@@ -167,7 +166,7 @@ class SpaItemScreen extends React.Component {
               onClose={() => this.dropDownOpen(item, false)}
               placeholder="Select a length"
               containerStyle={{ height: 40, margin: 25 }}
-              onChangeItem={(item) => console.log(item.label, item.value)}
+              onChangeItem={(item) => {}}
               dropDownMaxHeight={500}
               labelStyle={{ color: colors.primary }}
             />
@@ -191,6 +190,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     height: "100%",
     width: "100%",
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
   },
   textContainer: {
     backgroundColor: colors.white,

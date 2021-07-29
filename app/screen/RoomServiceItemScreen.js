@@ -85,7 +85,7 @@ class RoomServiceItemScreen extends React.Component {
 
     const addItem = () => {
       const n = roomServiceCart.indexOf(item);
-      console.log(n);
+
       if (n == -1) {
         item["amount"] = 1;
         roomServiceCart.push(item);
